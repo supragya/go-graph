@@ -1,8 +1,12 @@
 package gograph
 
-type Connections[K comparable, V any] map[K]V
+type WeightedEdge[W comparable, V any] struct {
+	Weight   W
+	Metadata V
+}
+type Connections[K comparable, W comparable, V any] map[K]WeightedEdge[W, V]
 
-func (s *Connections[K, V]) Exists(item K) bool {
+func (s *Connections[K, W, V]) Exists(item K) bool {
 	if s == nil {
 		return false
 	}
@@ -10,12 +14,12 @@ func (s *Connections[K, V]) Exists(item K) bool {
 	return exists
 }
 
-func (s *Connections[K, V]) Added(item K, edge V) *Connections[K, V] {
+func (s *Connections[K, W, V]) Added(item K, weight W, edge V) *Connections[K, W, V] {
 	if s == nil {
-		sNew := make(Connections[K, V])
-		sNew[item] = edge
+		sNew := make(Connections[K, W, V])
+		sNew[item] = WeightedEdge[W, V]{weight, edge}
 		return &sNew
 	}
-	(*s)[item] = edge
+	(*s)[item] = WeightedEdge[W, V]{weight, edge}
 	return s
 }
