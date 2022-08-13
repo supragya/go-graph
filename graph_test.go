@@ -22,7 +22,7 @@ func TestAddOneEdge(t *testing.T) {
 	assert.Equal(t, len(connections), 1, "number of connections")
 	for vertex, edge := range connections {
 		assert.Equal(t, vertex, "vertex2", "vertex")
-		assert.Equal(t, edge, gograph.WeightedEdge[uint, string]{1, "metadata"}, "edge")
+		assert.Equal(t, edge, gograph.WeightedEdge[uint64, string]{1, "metadata"}, "edge")
 	}
 	connections = graph.GetConnectedVertices("vertex2")
 	assert.Equal(t, len(connections), 0, "number of connections")
@@ -37,12 +37,12 @@ func TestAddOneEdgeBidirectional(t *testing.T) {
 	assert.Equal(t, len(connections), 1, "number of connections")
 	for vertex, edge := range connections {
 		assert.Equal(t, vertex, "vertex2", "vertex")
-		assert.Equal(t, edge, gograph.WeightedEdge[uint, string]{1, "metadata"}, "edge")
+		assert.Equal(t, edge, gograph.WeightedEdge[uint64, string]{1, "metadata"}, "edge")
 	}
 	connections = graph.GetConnectedVertices("vertex2")
 	assert.Equal(t, len(connections), 1, "number of connections")
 	for vertex, edge := range connections {
 		assert.Equal(t, vertex, "vertex1", "vertex")
-		assert.Equal(t, edge, gograph.WeightedEdge[uint, string]{1, "metadata"}, "edge")
+		assert.Equal(t, edge, gograph.WeightedEdge[uint64, string]{1, "metadata"}, "edge")
 	}
 }
