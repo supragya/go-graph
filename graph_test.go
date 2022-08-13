@@ -1,6 +1,10 @@
 package gograph_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"math/rand"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,4 +49,49 @@ func TestAddOneEdgeBidirectional(t *testing.T) {
 		assert.Equal(t, vertex, "vertex1", "vertex")
 		assert.Equal(t, edge, gograph.WeightedEdge[uint64, string]{1, "metadata"}, "edge")
 	}
+}
+
+func TestAPSP1(t *testing.T) {
+	graph := gograph.NewGraphStringUintString(false)
+	graph.AddEdge("v0", "v1", 1, "v0v1")
+	graph.AddEdge("v1", "v2", 1, "v1v2")
+	graph.AddEdge("v0", "v2", 3, "v0v2")
+	graph.AddEdge("v1", "v3", 1, "v1v3")
+	graph.AddEdge("v2", "v3", 1, "v2v3")
+
+	r1 := graph.GetShortestRoute("v0", "v2")
+	assert.Equal(t, r1, gograph.Route[string, string]{
+		[]string{"v0", "v1", "v2"},
+		[]gograph.WeightedEdge[uint64, string]{{1, "v0v1"}, {1, "v1v2"}},
+		2,
+	}, "shortest route")
+
+	r2 := graph.GetShortestRoute("v1", "v3")
+	assert.Equal(t, r2, gograph.Route[string, string]{
+		[]string{"v1", "v3"},
+		[]gograph.WeightedEdge[uint64, string]{{1, "v1v3"}},
+		1,
+	}, "shortest route")
+}
+
+func TestSaveToDisk(t *testing.T) {
+	graph := gograph.NewGraphStringUintString(false)
+	graph.AddEdge("v0", "v1", 1, "v0v1")
+	graph.AddEdge("v1", "v2", 1, "v1v2")
+	graph.AddEdge("v0", "v2", 3, "v0v2")
+	graph.AddEdge("v1", "v3", 1, "v1v3")
+	graph.AddEdge("v2", "v3", 1, "v2v3")
+
+	graph.CalculateAllPairShortestPath()
+	fmt.Print(reflect.TypeOf(graph.AllPairShortestPaths))
+
+	fileName := "/tmp/gograph-test-" + fmt.Sprint(rand.Uint64()) + ".json"
+	err := graph.SaveToDisk(fileName)
+	assert.Nil(t, err, "save to disk")
+}
+
+func TestJSONMarshalling(t *testing.T) {
+	route := map[string]map[string]gograph.Route[string, string]{}
+	_, err := json.Marshal(route)
+	assert.Nil(t, err, "JSON marshalling")
 }
