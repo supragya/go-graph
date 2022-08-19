@@ -1,10 +1,8 @@
 package gograph_test
 
 import (
-	"encoding/json"
-	"fmt"
-	"math/rand"
-	"reflect"
+	"crypto/rand"
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,15 +81,30 @@ func TestSaveToDisk(t *testing.T) {
 	graph.AddEdge("v2", "v3", 1, "v2v3")
 
 	graph.CalculateAllPairShortestPath()
-	fmt.Print(reflect.TypeOf(graph.AllPairShortestPaths))
+	r, _ := rand.Int(rand.Reader, big.NewInt(2_000_000))
 
-	fileName := "/tmp/gograph-test-" + fmt.Sprint(rand.Uint64()) + ".json"
+	fileName := "/tmp/gograph-test-" + r.String() + ".dat"
 	err := graph.SaveToDisk(fileName)
 	assert.Nil(t, err, "save to disk")
 }
 
-func TestJSONMarshalling(t *testing.T) {
-	route := map[string]map[string]gograph.Route[string, string]{}
-	_, err := json.Marshal(route)
-	assert.Nil(t, err, "JSON marshalling")
+func TestSaveAndReadbackAreSame(t *testing.T) {
+	graph := gograph.NewGraphStringUintString(false)
+	graph.AddEdge("v0", "v1", 1, "v0v1")
+	graph.AddEdge("v1", "v2", 1, "v1v2")
+	graph.AddEdge("v0", "v2", 3, "v0v2")
+	graph.AddEdge("v1", "v3", 1, "v1v3")
+	graph.AddEdge("v2", "v3", 1, "v2v3")
+
+	graph.CalculateAllPairShortestPath()
+	r, _ := rand.Int(rand.Reader, big.NewInt(2_000_000))
+	fileName := "/tmp/gograph-test-" + r.String() + ".dat"
+	err := graph.SaveToDisk(fileName)
+	assert.Nil(t, err, "save to disk")
+
+	newGraph := gograph.NewGraphStringUintString(false)
+	err = newGraph.ReadFromDisk(fileName)
+	assert.Nil(t, err, "read to disk")
+
+	assert.Equal(t, graph, newGraph, "equal graphs")
 }

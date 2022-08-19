@@ -1,10 +1,11 @@
 package gograph
 
 import (
-	"encoding/json"
 	"errors"
 	"math"
 	"os"
+
+	"github.com/alecthomas/binary"
 )
 
 type Tuple2[K comparable] struct {
@@ -84,16 +85,6 @@ func (g *Graph[K, V]) CalculateAllPairShortestPath() {
 	routeMap := make(map[Tuple2[K]]Route[K, V],
 		g.GetVertexCount()*g.GetVertexCount())
 
-	// for from, connections := range g.Vertices {
-	// 	for to, weightedEdge := range connections {
-	// 		routeMap[Tuple2[K]{from, to}] = Route[K, V]{
-	// 			Vertices: []K{from, to},
-	// 			Edges:    []WeightedEdge[uint64, V]{weightedEdge},
-	// 			Distance: weightedEdge.Weight,
-	// 		}
-	// 	}
-	// }
-
 	for from, connections := range g.Vertices {
 		for to := range g.Vertices {
 			if connections.Exists(to) {
@@ -149,10 +140,7 @@ func (g *Graph[K, V]) GetShortestRoute(from K, to K) Route[K, V] {
 
 func (g *Graph[K, V]) SaveToDisk(fileLocation string) error {
 	g.CalculateAllPairShortestPath()
-	binary, err := json.MarshalIndent(g, "", " ")
-	if err != nil {
-		return err
-	}
+
 	fo, err := os.Create(fileLocation)
 	if err != nil {
 		return err
@@ -162,6 +150,20 @@ func (g *Graph[K, V]) SaveToDisk(fileLocation string) error {
 			panic(err)
 		}
 	}()
-	_, err = fo.Write(binary)
+
+	bin, err := binary.Marshal(g)
+	if err != nil {
+		return err
+	}
+	_, err = fo.Write(bin)
 	return err
+}
+
+func (g *Graph[K, V]) ReadFromDisk(fileLocation string) error {
+	dat, err := os.ReadFile(fileLocation)
+	if err != nil {
+		return err
+	}
+
+	return binary.Unmarshal(dat, g)
 }
